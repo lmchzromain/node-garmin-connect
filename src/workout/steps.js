@@ -21,37 +21,54 @@ const PACE_TARGET_TYPE = {
   displayOrder: 6,
 };
 
+const HR_TARGET_TYPE = {
+  workoutTargetTypeId: 4,
+  workoutTargetTypeKey: 'heart.rate.zone',
+  displayOrder: 4,
+};
+
 // pace can be a single string "4:30" or a range { min: "4:15", max: "4:45" }
 const paceValues = (pace) => {
   const faster = typeof pace === 'string' ? pace : pace.min;
   const slower = typeof pace === 'string' ? pace : pace.max;
   return {
-    targetValueOne: paceToSpeed(slower), // lower speed bound
-    targetValueTwo: paceToSpeed(faster), // upper speed bound
+    targetValueOne: paceToSpeed(slower),
+    targetValueTwo: paceToSpeed(faster),
   };
 };
 
-const executableStep = (stepTypeId, stepTypeKey, displayOrder, { duration, distance, pace }) => ({
+// hr can be a single number (150) or a range { min: 140, max: 160 } in BPM
+const hrValues = (hr) => ({
+  targetValueOne: typeof hr === 'number' ? hr : hr.min,
+  targetValueTwo: typeof hr === 'number' ? hr : hr.max,
+});
+
+const targetFor = ({ pace, hr }) => {
+  if (pace) return { targetType: PACE_TARGET_TYPE, ...paceValues(pace) };
+  if (hr) return { targetType: HR_TARGET_TYPE, ...hrValues(hr) };
+  return { targetType: NO_TARGET };
+};
+
+const executableStep = (stepTypeId, stepTypeKey, displayOrder, { duration, distance, pace, hr }) => ({
   type: 'ExecutableStepDTO',
   stepType: { stepTypeId, stepTypeKey, displayOrder },
   endCondition: endConditionFor({ duration }),
   endConditionValue: duration ?? distance,
-  targetType: pace ? PACE_TARGET_TYPE : NO_TARGET,
-  ...(pace && paceValues(pace)),
+  ...targetFor({ pace, hr }),
 });
 
 /**
- * @param {{ duration?: number, distance?: number, pace?: string | { min: string, max: string } }} opts
+ * @param {{ duration?: number, distance?: number, pace?: string | { min: string, max: string }, hr?: number | { min: number, max: number } }} opts
  */
 export const warmup = (opts) => executableStep(1, 'warmup', 1, opts);
 
 /**
- * @param {{ duration?: number, distance?: number, pace?: string | { min: string, max: string } }} opts
+ * @param {{ duration?: number, distance?: number, pace?: string | { min: string, max: string }, hr?: number | { min: number, max: number } }} opts
  */
 export const interval = (opts) => executableStep(3, 'interval', 3, opts);
 
 /**
- * @param {{ duration?: number, distance?: number, pace?: string | { min: string, max: string } }} opts
+ * @param {{ duration?: number, distance?: number, pace?: string | { min: string, max: string }, hr?: number | { min: number, max: number } }} opts
  */
 export const recovery = (opts) => executableStep(4, 'recovery', 4, opts);
 
@@ -61,7 +78,7 @@ export const recovery = (opts) => executableStep(4, 'recovery', 4, opts);
 export const rest = (opts) => executableStep(5, 'rest', 5, opts);
 
 /**
- * @param {{ duration?: number, distance?: number, pace?: string | { min: string, max: string } }} opts
+ * @param {{ duration?: number, distance?: number, pace?: string | { min: string, max: string }, hr?: number | { min: number, max: number } }} opts
  */
 export const cooldown = (opts) => executableStep(2, 'cooldown', 2, opts);
 
