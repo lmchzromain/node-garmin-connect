@@ -8,7 +8,11 @@
       "Bash(python3 -c \"import sys, json; data = json.load\\(sys.stdin\\); print\\('\\\\n'.join\\([f['name'] for f in data if f['type'] == 'file']\\)\\)\")",
       "Bash(curl -s https://raw.githubusercontent.com/florianpasteur/garmin-connect/main/src/garmin/types/index.ts)",
       "Bash(curl -s https://raw.githubusercontent.com/florianpasteur/garmin-connect/main/src/garmin/UrlClass.ts)",
-      "Bash(curl -s https://raw.githubusercontent.com/florianpasteur/garmin-connect/main/src/garmin/GarminConnect.ts)"
+      "Bash(curl -s https://raw.githubusercontent.com/florianpasteur/garmin-connect/main/src/garmin/GarminConnect.ts)",
+      "Bash(curl -s https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/garminconnect/client.py)",
+      "Bash(curl -s https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py)",
+      "Bash(curl -s \"https://api.github.com/repos/cyberjunky/python-garminconnect/contents/garminconnect\")",
+      "Bash(curl -s https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/garminconnect/__init__.py)"
     ]
   }
 }

@@ -9,6 +9,7 @@ import {
   isOauth2Valid,
   withExpiry,
 } from './tokens.js';
+import { createClient } from '../client.js';
 
 const fullLogin = async (username, password) => {
   const cookieJar = new CookieJar();
@@ -26,27 +27,29 @@ const fullLogin = async (username, password) => {
 
 const refreshOauth2 = async (oauth1) => {
   const consumer = await fetchConsumerCredentials();
-  const oauth2 = withExpiry(await exchangeForOauth2Token(oauth1, consumer));
-  return oauth2;
+  return withExpiry(await exchangeForOauth2Token(oauth1, consumer));
 };
 
 export const login = async (username, password, { tokensPath = DEFAULT_TOKENS_PATH } = {}) => {
   const existing = await readTokens(tokensPath);
 
   if (existing) {
-    if (isOauth2Valid(existing.oauth2)) return existing;
+    if (isOauth2Valid(existing.oauth2)) return createClient(existing.oauth2);
 
     try {
       const oauth2 = await refreshOauth2(existing.oauth1);
-      const tokens = { ...existing, oauth2 };
-      await writeTokens(tokens, tokensPath);
-      return tokens;
+      await writeTokens({ ...existing, oauth2 }, tokensPath);
+      return createClient(oauth2);
     } catch {
       // fall through to full login
     }
   }
 
-  const tokens = await fullLogin(username, password);
-  await writeTokens(tokens, tokensPath);
-  return tokens;
+  try {
+    const tokens = await fullLogin(username, password);
+    await writeTokens(tokens, tokensPath);
+    return createClient(tokens.oauth2);
+  } catch (err) {
+    throw new Error(`Garmin Connect login failed: ${err.message}`, { cause: err });
+  }
 };
