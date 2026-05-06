@@ -1,4 +1,7 @@
 import { getUserProfile } from './api/getUserProfile.js';
+import { uploadWorkout } from './api/uploadWorkout.js';
+import { scheduleWorkout } from './api/scheduleWorkout.js';
+import { buildRunningWorkout } from './workout/buildWorkout.js';
 import { getSocialProfile } from './api/getSocialProfile.js';
 import { getTrainingStatus } from './api/getTrainingStatus.js';
 import { getTrainingReadiness } from './api/getTrainingReadiness.js';
@@ -28,5 +31,12 @@ export const createClient = (oauth2) => ({
       ]);
 
     return { trainingStatus, trainingReadiness, hrv, weight, personalRecords, dailySummary, dailySleep, activities };
+  },
+
+  uploadRunningWorkout: async ({ name, description, steps, date }) => {
+    const workout = buildRunningWorkout({ name, description, steps });
+    const { workoutId } = await uploadWorkout(oauth2, workout);
+    if (date) await scheduleWorkout(oauth2, workoutId, date);
+    return workoutId;
   },
 });
