@@ -1,0 +1,1 @@
+// Garmin SSO authentication flow
