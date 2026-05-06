@@ -5,5 +5,5 @@ const { GARMIN_EMAIL, GARMIN_PASSWORD } = process.env;
 
 const garminConnect = await GarminConnect(GARMIN_EMAIL, GARMIN_PASSWORD);
 
-const profile = await garminConnect.getUserProfile();
-console.log('User profile:', profile);
+const profile = await garminConnect.getAthleteProfile();
+console.log("profile", profile);
