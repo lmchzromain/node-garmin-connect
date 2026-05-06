@@ -4,9 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Node.js library that fetches data from Garmin Connect and writes it as JSON files (e.g. `activities.json`, `health-daily.json`). Authentication is modeled after [garmin-connect](https://github.com/florianpasteur/garmin-connect), with data-fetching functions ported from [python-garminconnect](https://github.com/cyberjunky/python-garminconnect).
+Node.js library for interacting with Garmin Connect. It exposes:
 
-The package is designed to be consumed by other projects. The caller supplies the output directory; this library only handles fetching and serializing the data.
+- **Authentication** — Garmin SSO/OAuth flow, with token persistence to avoid re-logging in.
+- **Data fetching** — functions to retrieve user data from Garmin Connect (activities, health, sleep, …), ported from [python-garminconnect](https://github.com/cyberjunky/python-garminconnect).
+
+The package is designed to be consumed by other projects. It returns raw data — serialization and storage are the caller's responsibility.
 
 ## Commands
 
@@ -14,8 +17,7 @@ The package is designed to be consumed by other projects. The caller supplies th
 npm install        # Install dependencies
 npm run lint       # ESLint
 npm run format     # Prettier
-npm test           # Run all tests
-npm test -- <file> # Run a single test file
+node test.js       # Manual auth smoke test
 ```
 
 ## Code Style
@@ -32,15 +34,13 @@ npm test -- <file> # Run a single test file
 
 ```
 src/
-  auth/      # Garmin SSO / OAuth authentication flow
-  api/       # One file per Garmin Connect endpoint category (activities, health, sleep, …)
-  writers/   # One file per output JSON (activities.json, health-daily.json, …)
-  utils/     # Shared pure helpers (request, date formatting, …)
-index.js     # Public API — re-exports from src/
+  auth/      # Garmin SSO / OAuth flow + token persistence
+  api/       # One file per data domain (activities, health, sleep, …)
+  utils/     # Shared pure helpers
+index.js     # Public API
+test.js      # Manual smoke test (not shipped)
 ```
 
-Authentication goes through Garmin's SSO flow (CSRF token → login → OAuth token exchange). The resulting session/token is passed explicitly into each API call rather than stored in global state.
+Authentication goes through Garmin's SSO flow (CSRF token → login → OAuth 1.0a → OAuth 2.0 Bearer token). Tokens are persisted to `.garmin-tokens.json` and refreshed automatically — a full SSO login only happens when no valid token exists.
 
-Each file in `src/api/` exports a set of functions that accept a session object and return raw fetched data — no class instances, no shared mutable state.
-
-Each file in `src/writers/` exports a function with the signature `(data, outputDir) => Promise<void>` that serializes the relevant data and writes the corresponding `.json` file to the caller-supplied `outputDir`.
+Each file in `src/api/` exports functions that accept the OAuth2 token and return raw fetched data — no class instances, no shared mutable state.

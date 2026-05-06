@@ -1,2 +1,1 @@
-export * from './src/auth/index.js';
-export * from './src/writers/index.js';
+export { login as GarminConnect } from './src/auth/index.js';
