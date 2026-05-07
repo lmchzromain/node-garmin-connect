@@ -29,10 +29,14 @@ const parse = ({
  * @param {object} [options]
  * @param {number} [options.limit=20] - Number of activities to return
  * @param {number} [options.start=0] - Offset for pagination
+ * @param {string} [options.startDate] - Filter from date (YYYY-MM-DD, inclusive)
+ * @param {string} [options.endDate] - Filter to date (YYYY-MM-DD, inclusive)
  * @returns {Promise<object[]>}
  */
-export const getActivities = (oauth2, { limit = 20, start = 0 } = {}) =>
+export const getActivities = (oauth2, { limit = 20, start = 0, startDate, endDate } = {}) =>
   makeClient(oauth2)
-    .get('activitylist-service/activities/search/activities', { searchParams: { start, limit } })
+    .get('activitylist-service/activities/search/activities', {
+      searchParams: { start, limit, ...(startDate && { startDate }), ...(endDate && { endDate }) },
+    })
     .json()
     .then((records) => records.map(parse));

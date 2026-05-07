@@ -16,7 +16,7 @@ export const createClient = (oauth2) => ({
   getAthleteData: async (date = new Date().toISOString().slice(0, 10)) => {
     const { displayName } = await getSocialProfile(oauth2);
 
-    const [userProfile, trainingStatus, trainingReadiness, hrv, sleep, personalRecords, activities] =
+    const [userProfile, trainingStatus, trainingReadiness, hrv, sleep, personalRecords] =
       await Promise.all([
         getUserProfile(oauth2),
         getMonthlyTrainingStatus(oauth2, date),
@@ -24,7 +24,6 @@ export const createClient = (oauth2) => ({
         getMonthlyHrv(oauth2, date),
         getMonthlySleep(oauth2, displayName, date),
         getPersonalRecords(oauth2, displayName),
-        getActivities(oauth2, { limit: 40 }),
       ]);
 
     const daily = groupByDate(
@@ -32,8 +31,10 @@ export const createClient = (oauth2) => ({
       trainingStatus, trainingReadiness, hrv, sleep,
     );
 
-    return { userProfile, daily, personalRecords, activities };
+    return { userProfile, daily, personalRecords };
   },
+
+  getActivities: (options) => getActivities(oauth2, options),
 
   uploadRunningWorkout: async ({ name, description, steps, date }) => {
     const workout = buildRunningWorkout({ name, description, steps });

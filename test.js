@@ -7,7 +7,8 @@ const { GARMIN_EMAIL, GARMIN_PASSWORD } = process.env;
 
 const garminConnect = await GarminConnect(GARMIN_EMAIL, GARMIN_PASSWORD);
 
-const profile = await garminConnect.getAthleteData();
+const data = await garminConnect.getAthleteData();
+const activities = await garminConnect.getActivities({ startDate: '2026-01-01', endDate: '2026-03-31' });
 
 // await garminConnect.uploadRunningWorkout({
 //   name: 'test workout',
@@ -29,4 +30,5 @@ const profile = await garminConnect.getAthleteData();
 //   ],
 // });
 
-await writeFile('garmin.json', JSON.stringify(profile, null, 2));
+await writeFile('garmin_data.json', JSON.stringify(data, null, 2));
+await writeFile('garmin_activities.json', JSON.stringify(activities, null, 2));
