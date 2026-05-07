@@ -10,7 +10,6 @@ const parse = ({ hrvSummary }) => ({
   weeklyAvg: hrvSummary?.weeklyAvg,
   lastNightAvg: hrvSummary?.lastNightAvg,
   lastNight5MinHigh: hrvSummary?.lastNight5MinHigh,
-  status: hrvSummary?.status,
   baseline: hrvSummary?.baseline,
 });
 

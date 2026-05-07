@@ -11,8 +11,6 @@ const parse = (entries) => {
   return {
     date: entry?.calendarDate,
     score: entry?.score,
-    level: entry?.level,
-    feedbackShort: entry?.feedbackShort,
     sleepScore: entry?.sleepScore,
     recoveryTime: entry?.recoveryTime,
     hrvWeeklyAverage: entry?.hrvWeeklyAverage,

@@ -13,9 +13,7 @@ const parse = (raw) => {
   return {
     date: raw.mostRecentTrainingStatus?.lastPrimarySyncDate,
     vo2MaxRunning: raw.mostRecentVO2Max?.generic?.vo2MaxValue,
-    vo2MaxCycling: raw.mostRecentVO2Max?.cycling?.vo2MaxValue,
     trainingStatus: primaryDevice?.trainingStatus,
-    statusFeedback: primaryDevice?.trainingStatusFeedbackPhrase,
     acuteLoad: primaryDevice?.acuteTrainingLoadDTO?.dailyTrainingLoadAcute,
     chronicLoad: primaryDevice?.acuteTrainingLoadDTO?.dailyTrainingLoadChronic,
   };

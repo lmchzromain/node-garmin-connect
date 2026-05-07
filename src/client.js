@@ -10,6 +10,8 @@ import { getMonthlyHrv } from './api/getMonthlyHrv.js';
 import { getMonthlySleep } from './api/getMonthlySleep.js';
 import { getPersonalRecords } from './api/getPersonalRecords.js';
 import { getActivities } from './api/getActivities.js';
+import { getBodyBattery } from './api/getBodyBattery.js';
+import { getWeeklyStress } from './api/getWeeklyStress.js';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -31,14 +33,15 @@ export const createClient = (oauth2) => ({
   getAthleteData: async ({ startDate, endDate = today() } = {}) => {
     const start = startDate ?? daysAgo(30, endDate);
     const days = daysBetween(start, endDate);
-
     const { displayName } = await getSocialProfile(oauth2);
-    const [userProfile, personalRecords, hrv, sleep] = await Promise.all([
-      getUserProfile(oauth2),
-      getPersonalRecords(oauth2, displayName),
-      getMonthlyHrv(oauth2, endDate, days),
-      getMonthlySleep(oauth2, displayName, endDate, days),
-    ]);
+    const [userProfile, personalRecords, hrv, sleep, weeklyStress] =
+      await Promise.all([
+        getUserProfile(oauth2),
+        getPersonalRecords(oauth2, displayName),
+        getMonthlyHrv(oauth2, endDate, days),
+        getMonthlySleep(oauth2, displayName, endDate, days),
+        getWeeklyStress(oauth2, endDate, 52),
+      ]);
 
     const lastHrv = [...hrv].reverse().find((d) => d.weeklyAvg);
 
@@ -65,16 +68,17 @@ export const createClient = (oauth2) => ({
     const days = daysBetween(start, endDate);
 
     const { displayName } = await getSocialProfile(oauth2);
-    const [trainingStatus, trainingReadiness, hrv, sleep] = await Promise.all([
+    const [trainingStatus, trainingReadiness, hrv, sleep, bodyBattery] = await Promise.all([
       getMonthlyTrainingStatus(oauth2, endDate, days),
       getMonthlyTrainingReadiness(oauth2, endDate, days),
       getMonthlyHrv(oauth2, endDate, days),
       getMonthlySleep(oauth2, displayName, endDate, days),
+      getBodyBattery(oauth2, start, endDate),
     ]);
 
     const daily = groupByDate(
-      ['trainingStatus', 'trainingReadiness', 'hrv', 'sleep'],
-      trainingStatus, trainingReadiness, hrv, sleep,
+      ['trainingStatus', 'trainingReadiness', 'hrv', 'sleep', 'bodyBattery'],
+      trainingStatus, trainingReadiness, hrv, sleep, bodyBattery,
     );
 
     return { daily };
