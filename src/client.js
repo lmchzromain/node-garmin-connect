@@ -11,17 +11,14 @@ import { getPersonalRecords } from './api/getPersonalRecords.js';
 import { getDailySummary } from './api/getDailySummary.js';
 import { getDailySleep } from './api/getDailySleep.js';
 import { getActivities } from './api/getActivities.js';
-import { getLactateThreshold } from './api/getLactateThreshold.js';
-import { getMaxMetrics } from './api/getMaxMetrics.js';
 
 export const createClient = (oauth2) => ({
-  getUserProfile: () => getUserProfile(oauth2),
-
-  getAthleteProfile: async (date = new Date().toISOString().slice(0, 10)) => {
+  getAthleteData: async (date = new Date().toISOString().slice(0, 10)) => {
     const { displayName } = await getSocialProfile(oauth2);
 
-    const [trainingStatus, trainingReadiness, hrv, weight, personalRecords, dailySummary, dailySleep, activities, lactateThreshold, maxMetrics] =
+    const [userProfile, trainingStatus, trainingReadiness, hrv, weight, personalRecords, dailySummary, dailySleep, activities] =
       await Promise.all([
+        getUserProfile(oauth2),
         getTrainingStatus(oauth2, date),
         getTrainingReadiness(oauth2, date),
         getHrv(oauth2, date),
@@ -30,11 +27,9 @@ export const createClient = (oauth2) => ({
         getDailySummary(oauth2, displayName, date),
         getDailySleep(oauth2, displayName, date),
         getActivities(oauth2, { limit: 40 }),
-        getLactateThreshold(oauth2),
-        getMaxMetrics(oauth2, date),
       ]);
 
-    return { trainingStatus, trainingReadiness, hrv, weight, personalRecords, dailySummary, dailySleep, activities, lactateThreshold, maxMetrics };
+    return { userProfile, trainingStatus, trainingReadiness, hrv, weight, personalRecords, dailySummary, dailySleep, activities };
   },
 
   uploadRunningWorkout: async ({ name, description, steps, date }) => {
