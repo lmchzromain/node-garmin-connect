@@ -25,9 +25,9 @@ const parse = (entries) => {
  * @param {string} endDate - End date in YYYY-MM-DD format
  * @returns {Promise<object[]>}
  */
-export const getMonthlyTrainingReadiness = (oauth2, endDate) =>
+export const getMonthlyTrainingReadiness = (oauth2, endDate, days = 30) =>
   Promise.all(
-    lastNDays(endDate, 30).map((date) =>
+    lastNDays(endDate, days).map((date) =>
       makeClient(oauth2)
         .get(`metrics-service/metrics/trainingreadiness/${date}`)
         .json()
