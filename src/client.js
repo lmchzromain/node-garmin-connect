@@ -3,33 +3,36 @@ import { uploadWorkout } from './api/uploadWorkout.js';
 import { scheduleWorkout } from './api/scheduleWorkout.js';
 import { buildRunningWorkout } from './workout/buildWorkout.js';
 import { getSocialProfile } from './api/getSocialProfile.js';
-import { getTrainingStatus } from './api/getTrainingStatus.js';
-import { getTrainingReadiness } from './api/getTrainingReadiness.js';
-import { getHrv } from './api/getHrv.js';
-import { getWeight } from './api/getWeight.js';
+import { groupByDate } from './utils/dates.js';
+import { getMonthlyTrainingStatus } from './api/getMonthlyTrainingStatus.js';
+import { getMonthlyTrainingReadiness } from './api/getMonthlyTrainingReadiness.js';
+import { getMonthlyHrv } from './api/getMonthlyHrv.js';
+import { getMonthlySleep } from './api/getMonthlySleep.js';
 import { getPersonalRecords } from './api/getPersonalRecords.js';
-import { getDailySummary } from './api/getDailySummary.js';
-import { getDailySleep } from './api/getDailySleep.js';
 import { getActivities } from './api/getActivities.js';
+
 
 export const createClient = (oauth2) => ({
   getAthleteData: async (date = new Date().toISOString().slice(0, 10)) => {
     const { displayName } = await getSocialProfile(oauth2);
 
-    const [userProfile, trainingStatus, trainingReadiness, hrv, weight, personalRecords, dailySummary, dailySleep, activities] =
+    const [userProfile, trainingStatus, trainingReadiness, hrv, sleep, personalRecords, activities] =
       await Promise.all([
         getUserProfile(oauth2),
-        getTrainingStatus(oauth2, date),
-        getTrainingReadiness(oauth2, date),
-        getHrv(oauth2, date),
-        getWeight(oauth2, date),
+        getMonthlyTrainingStatus(oauth2, date),
+        getMonthlyTrainingReadiness(oauth2, date),
+        getMonthlyHrv(oauth2, date),
+        getMonthlySleep(oauth2, displayName, date),
         getPersonalRecords(oauth2, displayName),
-        getDailySummary(oauth2, displayName, date),
-        getDailySleep(oauth2, displayName, date),
         getActivities(oauth2, { limit: 40 }),
       ]);
 
-    return { userProfile, trainingStatus, trainingReadiness, hrv, weight, personalRecords, dailySummary, dailySleep, activities };
+    const daily = groupByDate(
+      ['trainingStatus', 'trainingReadiness', 'hrv', 'sleep'],
+      trainingStatus, trainingReadiness, hrv, sleep,
+    );
+
+    return { userProfile, daily, personalRecords, activities };
   },
 
   uploadRunningWorkout: async ({ name, description, steps, date }) => {
