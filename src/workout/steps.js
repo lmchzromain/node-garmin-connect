@@ -29,18 +29,24 @@ const HR_TARGET_TYPE = {
 
 // pace can be a single string "4:30" or a range { min: "4:15", max: "4:45" }
 const paceValues = (pace) => {
-  const faster = typeof pace === 'string' ? pace : pace.min;
-  const slower = typeof pace === 'string' ? pace : pace.max;
+  if (typeof pace === 'string') {
+    const [min, sec] = pace.split(':').map(Number);
+    const totalSec = min * 60 + sec;
+    return {
+      targetValueOne: 1000 / (totalSec - 5), // faster bound
+      targetValueTwo: 1000 / (totalSec + 5), // slower bound
+    };
+  }
   return {
-    targetValueOne: paceToSpeed(slower),
-    targetValueTwo: paceToSpeed(faster),
+    targetValueOne: paceToSpeed(pace.min),
+    targetValueTwo: paceToSpeed(pace.max),
   };
 };
 
 // hr can be a single number (150) or a range { min: 140, max: 160 } in BPM
 const hrValues = (hr) => ({
-  targetValueOne: typeof hr === 'number' ? hr : hr.min,
-  targetValueTwo: typeof hr === 'number' ? hr : hr.max,
+  targetValueOne: typeof hr === 'number' ? hr - 5 : hr.min,
+  targetValueTwo: typeof hr === 'number' ? hr + 5 : hr.max,
 });
 
 const targetFor = ({ pace, hr }) => {
