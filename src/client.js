@@ -11,7 +11,6 @@ import { getMonthlySleep } from './api/getMonthlySleep.js';
 import { getPersonalRecords } from './api/getPersonalRecords.js';
 import { getActivities } from './api/getActivities.js';
 import { getBodyBattery } from './api/getBodyBattery.js';
-import { getWeeklyStress } from './api/getWeeklyStress.js';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -34,34 +33,32 @@ export const createClient = (oauth2) => ({
     const start = startDate ?? daysAgo(30, endDate);
     const days = daysBetween(start, endDate);
     const { displayName } = await getSocialProfile(oauth2);
-    const [userProfile, personalRecords, hrv, sleep, weeklyStress] =
+    const [userProfile, personalRecords, hrv, sleep] =
       await Promise.all([
         getUserProfile(oauth2),
         getPersonalRecords(oauth2, displayName),
         getMonthlyHrv(oauth2, endDate, days),
         getMonthlySleep(oauth2, displayName, endDate, days),
-        getWeeklyStress(oauth2, endDate, 52),
       ]);
 
     const lastHrv = [...hrv].reverse().find((d) => d.weeklyAvg);
 
     return {
-      userProfile: {
-        ...userProfile,
-        restingHR: avg(sleep.map((d) => d.restingHR)),
-        hrv: {
-          weeklyAvg: lastHrv?.weeklyAvg,
-          baseline: lastHrv?.baseline,
-          status: lastHrv?.status,
-        },
-        sleep: {
-          avgDuration: avg(sleep.map((d) => d.duration)),
-          avgScore: avg(sleep.map((d) => d.score)),
-        },
+      ...userProfile,
+      restingHR: avg(sleep.map((d) => d.restingHR)),
+      hrv: {
+        weeklyAvg: lastHrv?.weeklyAvg,
+        baseline: lastHrv?.baseline,
+      },
+      sleep: {
+        avgDuration: avg(sleep.map((d) => d.duration)),
+        avgScore: avg(sleep.map((d) => d.score)),
       },
       personalRecords,
     };
   },
+
+
 
   getHealthData: async ({ startDate, endDate = today() } = {}) => {
     const start = startDate ?? daysAgo(30, endDate);
@@ -76,12 +73,10 @@ export const createClient = (oauth2) => ({
       getBodyBattery(oauth2, start, endDate),
     ]);
 
-    const daily = groupByDate(
+    return groupByDate(
       ['trainingStatus', 'trainingReadiness', 'hrv', 'sleep', 'bodyBattery'],
       trainingStatus, trainingReadiness, hrv, sleep, bodyBattery,
     );
-
-    return { daily };
   },
 
   getActivities: ({ startDate, endDate, limit } = {}) =>
